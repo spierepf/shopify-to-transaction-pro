@@ -51,11 +51,11 @@ public class GroovyAppTest
 
     def transform(def records, def script)
     {
-        records.each { record ->
-            def binding = new Binding()
-            def shell = new GroovyShell(binding)
-            binding.setProperty('record', record)
+        def binding = new Binding()
+        def shell = new GroovyShell(binding)
 
+        records.each { record ->
+            binding.setProperty('record', record)
             shell.evaluate(script)
         }
 
