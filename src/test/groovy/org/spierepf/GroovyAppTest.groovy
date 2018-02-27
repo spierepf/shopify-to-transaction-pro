@@ -26,7 +26,8 @@ public class GroovyAppTest
         def records = [[Name: 'Spierenburg, Peter-Frank', ID: 12345]]
 
         def stringWriter = new StringWriter()
-        def writer = App.load(stringWriter, records)
+        def writer = new CSVWriter(stringWriter)
+        App.load(writer, records)
 
         assertEquals('"Name","ID"\n"Spierenburg, Peter-Frank","12345"\n', stringWriter.getBuffer().toString())
     }

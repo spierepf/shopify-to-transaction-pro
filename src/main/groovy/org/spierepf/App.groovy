@@ -4,8 +4,6 @@ import groovy.swing.*
 import javax.swing.*
 import java.awt.*
 
-import com.opencsv.*
-
 static def extract(def reader)
 {
     def records = []
@@ -25,20 +23,18 @@ static def extract(def reader)
 
 static def load(def writer, def records)
 {
-    def csvWriter = new CSVWriter(writer)
-
     Set headerSet = []
     records.forEach { headerSet.addAll(it.keySet()) }
     String[] header = new String[headerSet.size()]
     headerSet.toArray(header)
-    csvWriter.writeNext(header)
+    writer.writeNext(header)
 
     String[] line = new String[headerSet.size()]
     records.forEach { record ->
         for(int i = 0; i < header.size(); ++i) {
             line[i] = record[header[i]]
         }
-        csvWriter.writeNext(line)
+        writer.writeNext(line)
     }
 }
 
