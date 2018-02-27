@@ -49,6 +49,19 @@ public class GroovyAppTest
         }
     }
 
+    def transform(def records, def script)
+    {
+        records.each { record ->
+            def binding = new Binding()
+            def shell = new GroovyShell(binding)
+            binding.setProperty('record', record)
+
+            shell.evaluate(script)
+        }
+
+        return records
+    }
+
     public void testExtract()
     {
         CSVReader reader = new CSVReader(new StringReader('Name,ID\n"Spierenburg, Peter-Frank",12345\n'))
@@ -65,5 +78,15 @@ public class GroovyAppTest
         def writer = load(stringWriter, records)
 
         assertEquals('"Name","ID"\n"Spierenburg, Peter-Frank","12345"\n', stringWriter.getBuffer().toString())
+    }
+
+    public void testTransform()
+    {
+        def records = [[Amount: "1000.00"]]
+
+        transform(records, 'record["Commission"] = String.format("%.2f", record["Amount"].toFloat() * 0.60)')
+
+        assertEquals("1000.00", records[0]["Amount"])
+        assertEquals("600.00", records[0]["Commission"])
     }
 }
