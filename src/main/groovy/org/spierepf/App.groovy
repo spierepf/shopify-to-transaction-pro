@@ -4,6 +4,57 @@ import groovy.swing.*
 import javax.swing.*
 import java.awt.*
 
+import com.opencsv.*
+
+static def extract(def reader)
+{
+    def records = []
+
+    def header = reader.readNext()
+
+    def line = reader.readNext()
+    while(line != null) {
+        def record = [:]
+        header.eachWithIndex { value, index -> record[value] = line[index] }
+        records << record
+        line = reader.readNext()
+    }
+
+    return records
+}
+
+static def load(def writer, def records)
+{
+    def csvWriter = new CSVWriter(writer)
+
+    Set headerSet = []
+    records.forEach { headerSet.addAll(it.keySet()) }
+    String[] header = new String[headerSet.size()]
+    headerSet.toArray(header)
+    csvWriter.writeNext(header)
+
+    String[] line = new String[headerSet.size()]
+    records.forEach { record ->
+        for(int i = 0; i < header.size(); ++i) {
+            line[i] = record[header[i]]
+        }
+        csvWriter.writeNext(line)
+    }
+}
+
+static def transform(def records, def script)
+{
+    def binding = new Binding()
+    def shell = new GroovyShell(binding)
+
+    records.each { record ->
+        binding.setProperty('record', record)
+        shell.evaluate(script)
+    }
+
+    return records
+}
+
 new SwingBuilder().edt {
     lookAndFeel 'nimbus'  // Simple change in look and feel.
     frame(title: 'App', pack: true, show: true, locationRelativeTo: null, defaultCloseOperation: WindowConstants.EXIT_ON_CLOSE) {

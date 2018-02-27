@@ -13,59 +13,10 @@ import com.opencsv.CSVWriter
 public class GroovyAppTest 
     extends GroovyTestCase
 {
-    def extract(def reader)
-    {
-        def records = []
-
-        def header = reader.readNext()
-
-        def line = reader.readNext()
-        while(line != null) {
-            def record = [:]
-            header.eachWithIndex { value, index -> record[value] = line[index] }
-            records << record
-            line = reader.readNext()
-        }
-
-        return records
-    }
-
-    def load(def writer, def records)
-    {
-        def csvWriter = new CSVWriter(writer)
-
-        Set headerSet = []
-        records.forEach { headerSet.addAll(it.keySet()) }
-        String[] header = new String[headerSet.size()]
-        headerSet.toArray(header)
-        csvWriter.writeNext(header)
-
-        String[] line = new String[headerSet.size()]
-        records.forEach { record ->
-            for(int i = 0; i < header.size(); ++i) {
-                line[i] = record[header[i]]
-            }
-            csvWriter.writeNext(line)
-        }
-    }
-
-    def transform(def records, def script)
-    {
-        def binding = new Binding()
-        def shell = new GroovyShell(binding)
-
-        records.each { record ->
-            binding.setProperty('record', record)
-            shell.evaluate(script)
-        }
-
-        return records
-    }
-
     public void testExtract()
     {
         CSVReader reader = new CSVReader(new StringReader('Name,ID\n"Spierenburg, Peter-Frank",12345\n'))
-        def records = extract(reader)
+        def records = App.extract(reader)
         assertEquals('Spierenburg, Peter-Frank', records[0]['Name'])
         assertEquals('12345', records[0]['ID'])
     }
@@ -75,7 +26,7 @@ public class GroovyAppTest
         def records = [[Name: 'Spierenburg, Peter-Frank', ID: 12345]]
 
         def stringWriter = new StringWriter()
-        def writer = load(stringWriter, records)
+        def writer = App.load(stringWriter, records)
 
         assertEquals('"Name","ID"\n"Spierenburg, Peter-Frank","12345"\n', stringWriter.getBuffer().toString())
     }
@@ -84,7 +35,7 @@ public class GroovyAppTest
     {
         def records = [[Amount: "1000.00"]]
 
-        transform(records, 'record["Commission"] = String.format("%.2f", record["Amount"].toFloat() * 0.60)')
+        App.transform(records, 'record["Commission"] = String.format("%.2f", record["Amount"].toFloat() * 0.60)')
 
         assertEquals("1000.00", records[0]["Amount"])
         assertEquals("600.00", records[0]["Commission"])
