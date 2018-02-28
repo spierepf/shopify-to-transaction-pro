@@ -40,17 +40,19 @@ static def load(def writer, def records)
     }
 }
 
-static def transform(def records, def script)
+static def transform(def inRecords, def script)
 {
+    def outRecords = [:]
     def binding = new Binding()
     def shell = new GroovyShell(binding)
+    binding.setProperty('outRecords', outRecords)
 
-    records.each { record ->
-        binding.setProperty('record', record)
+    inRecords.each { inRecord ->
+        binding.setProperty('inRecord', inRecord)
         shell.evaluate(script)
     }
 
-    return records
+    return outRecords
 }
 
 def updateOkButton() {
@@ -136,7 +138,7 @@ new SwingBuilder().edt {
                 def records = extract(reader)
                 reader.close()
 
-                transform(records, 'record["Commission"] = String.format("%.2f", record["Price"].toFloat() * 0.60)')
+                transform(records, 'inRecord["Commission"] = String.format("%.2f", inRecord["Price"].toFloat() * 0.60)\noutRecords << inRecord')
 
                 def writer = new CSVWriter(new FileWriter(destinationFileNameTextField.text))
                 load(writer, records)

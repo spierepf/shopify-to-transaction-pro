@@ -34,11 +34,11 @@ public class GroovyAppTest
 
     public void testTransform()
     {
-        def records = [[Amount: "1000.00"]]
+        def records = [[Price: "1000.00"]]
 
-        App.transform(records, 'record["Commission"] = String.format("%.2f", record["Amount"].toFloat() * 0.60)')
+        App.transform(records, 'inRecord["Commission"] = String.format("%.2f", inRecord["Price"].toFloat() * 0.60)\noutRecords << inRecord')
 
-        assertEquals("1000.00", records[0]["Amount"])
+        assertEquals("1000.00", records[0]["Price"])
         assertEquals("600.00", records[0]["Commission"])
     }
 }
